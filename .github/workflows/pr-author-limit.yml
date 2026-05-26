@@ -45,7 +45,7 @@ jobs:
             // Skip trusted authors: repo owners, members, and collaborators
             // can legitimately have many open PRs in flight.
             const trustedAssoc = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
-            if (!trustedAssoc.has(pr.author_association)) {
+            if (trustedAssoc.has(pr.author_association)) {
               core.info(`Skipping: ${author} has trusted association ${pr.author_association}.`);
               return;
             }
