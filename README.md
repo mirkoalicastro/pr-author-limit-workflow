@@ -1,6 +1,6 @@
 # pr-author-limit
 
-GitHub Actions workflow that auto-closes new pull requests when the author already has more than N open PRs in the same repository.
+A **copy-paste GitHub Actions workflow** that auto-closes new pull requests when the author already has more than N open PRs in the same repository. Not a Marketplace action: drop the YAML file into your repo (see [Install](#install)).
 
 Particularly useful for tackling **AI-generated PRs** that can flood a repository with concurrent submissions faster than a human can review them.
 
