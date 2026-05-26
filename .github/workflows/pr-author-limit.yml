@@ -32,6 +32,8 @@ jobs:
           MAX_OPEN_PRS_PER_AUTHOR: ${{ vars.MAX_OPEN_PRS_PER_AUTHOR || '5' }}
           # Comma-separated logins to skip (e.g. "renovate[bot],dependabot[bot]").
           BOT_ALLOWLIST: ${{ vars.BOT_ALLOWLIST || '' }}
+          # Set to 'false' to enforce the limit on OWNER/MEMBER/COLLABORATOR too.
+          SKIP_TRUSTED_AUTHORS: ${{ vars.SKIP_TRUSTED_AUTHORS || 'true' }}
         with:
           script: |
             const limit = parseInt(process.env.MAX_OPEN_PRS_PER_AUTHOR, 10);
@@ -44,10 +46,11 @@ jobs:
             const author = pr.user.login;
             const prNumber = pr.number;
 
-            // Skip trusted authors: repo owners, members, and collaborators
-            // can legitimately have many open PRs in flight.
+            // Skip trusted authors (owners/members/collaborators) when the
+            // SKIP_TRUSTED_AUTHORS variable is enabled (default).
+            const skipTrusted = process.env.SKIP_TRUSTED_AUTHORS.toLowerCase() === 'true';
             const trustedAssoc = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
-            if (trustedAssoc.has(pr.author_association)) {
+            if (skipTrusted && trustedAssoc.has(pr.author_association)) {
               core.info(`Skipping: ${author} has trusted association ${pr.author_association}.`);
               return;
             }
