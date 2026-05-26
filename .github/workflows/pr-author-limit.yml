@@ -14,7 +14,7 @@ jobs:
       - name: Close PR if author exceeds open PR limit
         uses: actions/github-script@v7
         env:
-          MAX_OPEN_PRS_PER_AUTHOR: ${{ vars.MAX_OPEN_PRS_PER_AUTHOR || '2' }}
+          MAX_OPEN_PRS_PER_AUTHOR: ${{ vars.MAX_OPEN_PRS_PER_AUTHOR || '5' }}
         with:
           script: |
             const limit = parseInt(process.env.MAX_OPEN_PRS_PER_AUTHOR, 10);
