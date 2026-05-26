@@ -75,14 +75,27 @@ jobs:
             }
 
             // Avoid spamming on repeated reopen events: only comment once.
-            const existing = await github.paginate(github.rest.issues.listComments, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-              per_page: 100,
-            });
+            // First `opened` has no prior comments by definition, so skip the
+            // scan entirely. On `reopened`, stream pages and stop at first hit
+            // instead of paginating the whole thread.
             const marker = '<!-- pr-author-limit:auto-close -->';
-            const alreadyCommented = existing.some(c => c.body && c.body.includes(marker));
+            let alreadyCommented = false;
+            if (context.payload.action === 'reopened') {
+              const iter = github.paginate.iterator(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              });
+              scan: for await (const { data: page } of iter) {
+                for (const c of page) {
+                  if (c.body && c.body.includes(marker)) {
+                    alreadyCommented = true;
+                    break scan;
+                  }
+                }
+              }
+            }
 
             if (!alreadyCommented) {
               // `author` is a GitHub login (restricted charset); safe to interpolate.
