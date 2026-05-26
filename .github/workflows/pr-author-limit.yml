@@ -30,6 +30,8 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MAX_OPEN_PRS_PER_AUTHOR: ${{ vars.MAX_OPEN_PRS_PER_AUTHOR || '5' }}
+          # Comma-separated logins to skip (e.g. "renovate[bot],dependabot[bot]").
+          BOT_ALLOWLIST: ${{ vars.BOT_ALLOWLIST || '' }}
         with:
           script: |
             const limit = parseInt(process.env.MAX_OPEN_PRS_PER_AUTHOR, 10);
@@ -50,14 +52,12 @@ jobs:
               return;
             }
 
-            // Skip known automation accounts (Renovate is enabled in this repo;
-            // Dependabot / GitHub Actions bot may also legitimately exceed the limit).
-            const botAllowlist = new Set([
-              'dependabot[bot]',
-              'renovate[bot]',
-              'github-actions[bot]',
-            ]);
-            if (author.endsWith('[bot]') || botAllowlist.has(author)) {
+            // Skip automation accounts configured via the BOT_ALLOWLIST repo
+            // variable (comma-separated logins).
+            const botAllowlist = new Set(
+              process.env.BOT_ALLOWLIST.split(',').map(s => s.trim()).filter(Boolean)
+            );
+            if (author.endsWith('[bot]') && botAllowlist.has(author)) {
               core.info(`Skipping bot author: ${author}.`);
               return;
             }
